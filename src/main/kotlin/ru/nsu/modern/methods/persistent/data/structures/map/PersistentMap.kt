@@ -3,7 +3,7 @@ package ru.nsu.modern.methods.persistent.data.structures.map
 import ru.nsu.modern.methods.persistent.data.structures.PersistentCollection
 
 /**
- * Persistent storage of key-value pairs with log(n) access.
+ * Persistent storage of key-value pairs.
  */
 interface PersistentMap<K, V> : PersistentCollection<PersistentMap.Entry<K, V>> {
     /**
@@ -27,5 +27,5 @@ interface PersistentMap<K, V> : PersistentCollection<PersistentMap.Entry<K, V>> 
     /**
      * Removes given [key]
      */
-    fun removes(key: K)
+    fun remove(key: K)
 }
