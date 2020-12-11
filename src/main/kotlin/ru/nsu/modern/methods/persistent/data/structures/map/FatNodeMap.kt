@@ -1,6 +1,4 @@
-package main.kotlin.ru.nsu.modern.methods.persistent.data.structures.map
-
-import ru.nsu.modern.methods.persistent.data.structures.map.PersistentMap
+package ru.nsu.modern.methods.persistent.data.structures.map
 
 class FatNodeMap<K, V>() : PersistentMap<K, V> {
     override fun get(key: K): V {

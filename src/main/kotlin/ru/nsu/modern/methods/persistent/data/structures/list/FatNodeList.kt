@@ -1,7 +1,4 @@
-package main.kotlin.ru.nsu.modern.methods.persistent.data.structures.list
-
-import ru.nsu.modern.methods.persistent.data.structures.PersistentCollection
-import ru.nsu.modern.methods.persistent.data.structures.list.PersistentList
+package ru.nsu.modern.methods.persistent.data.structures.list
 
 class FatNodeList<T>() : PersistentList<T> {
     override val size: Int
