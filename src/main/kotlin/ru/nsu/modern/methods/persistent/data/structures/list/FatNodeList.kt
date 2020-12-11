@@ -1,5 +1,7 @@
 package ru.nsu.modern.methods.persistent.data.structures.list
 
+import ru.nsu.modern.methods.persistent.data.structures.array.PersistentArray
+
 class FatNodeList<T>() : PersistentList<T> {
     override val size: Int
         get() = TODO("Not yet implemented")
@@ -29,11 +31,11 @@ class FatNodeList<T>() : PersistentList<T> {
         TODO("Not yet implemented")
     }
 
-    override fun toPersistentList() {
+    override fun toPersistentList(): PersistentList<T> {
         TODO("Not yet implemented")
     }
 
-    override fun toPersistentArray() {
+    override fun toPersistentArray(): PersistentArray<T> {
         TODO("Not yet implemented")
     }
 }

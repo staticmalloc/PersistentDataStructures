@@ -1,5 +1,6 @@
 package ru.nsu.modern.methods.persistent.data.structures.array
 
+import ru.nsu.modern.methods.persistent.data.structures.list.PersistentList
 import ru.nsu.modern.methods.persistent.data.structures.shared.FatNode
 import ru.nsu.modern.methods.persistent.data.structures.shared.VersionedValue
 
@@ -37,7 +38,7 @@ class FatNodeArray<T>(
         }
 
     override fun get(index: Int): T {
-        return nodes[index].findValue(version).value
+        return nodes[index].findValue(version)?.value ?: throw NoSuchElementException()
     }
 
     override fun set(index: Int, value: T) {
@@ -63,11 +64,11 @@ class FatNodeArray<T>(
         override fun next() = this@FatNodeArray[index++]
     }
 
-    override fun toPersistentList() {
+    override fun toPersistentList(): PersistentList<T> {
         TODO("Not yet implemented")
     }
 
-    override fun toPersistentArray() {
+    override fun toPersistentArray(): PersistentArray<T> {
         TODO("Not yet implemented")
     }
 }

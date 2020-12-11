@@ -1,5 +1,8 @@
 package ru.nsu.modern.methods.persistent.data.structures
 
+import ru.nsu.modern.methods.persistent.data.structures.array.PersistentArray
+import ru.nsu.modern.methods.persistent.data.structures.list.PersistentList
+
 /**
  * Base interface for all persistent data structures.
  * Provides access to previous versions of data structure.
@@ -61,7 +64,7 @@ interface PersistentCollection<T> : Iterable<T>, Transactional {
     }
 
 
-    fun toPersistentList()
+    fun toPersistentList(): PersistentList<T>
 
-    fun toPersistentArray()
+    fun toPersistentArray(): PersistentArray<T>
 }

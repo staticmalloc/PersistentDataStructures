@@ -31,13 +31,17 @@ internal class FatNode<T>(
 
     /**
      * Finds value with max version <= [version].
+     * Return null if version is not found.
      */
-    fun findValue(version: Int): VersionedValue<T> {
+    fun findValue(version: Int): VersionedValue<T>? {
         val binarySearchResult = values.binarySearch { it.version - version }
         val index = if (binarySearchResult < 0) {
             -binarySearchResult - 2
         } else {
             binarySearchResult
+        }
+        if (index < 0) {
+            return null
         }
         return values[index]
     }

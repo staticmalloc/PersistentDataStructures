@@ -2,6 +2,7 @@ package ru.nsu.modern.methods.persistent.data.structures.array
 
 import org.junit.Assert
 import org.junit.Test
+import ru.nsu.modern.methods.persistent.data.structures.assertVersionsIs
 
 class PersistentArrayTest {
     private val underTest = FatNodeArray(3) { 0 }
@@ -17,7 +18,7 @@ class PersistentArrayTest {
         Assert.assertEquals(5, underTest.lastVersion)
         Assert.assertEquals(5, underTest.version)
 
-        assertVersionsIs(
+        underTest.assertVersionsIs(
             expectedVersions = listOf(
                 listOf(0, 0, 0),
                 listOf(1, 0, 0),
@@ -41,7 +42,7 @@ class PersistentArrayTest {
         Assert.assertEquals(2, underTest.lastVersion)
         Assert.assertEquals(2, underTest.version)
 
-        assertVersionsIs(
+        underTest.assertVersionsIs(
             expectedVersions = listOf(
                 listOf(0, 0, 0),
                 listOf(10, 0, 0),
@@ -67,12 +68,5 @@ class PersistentArrayTest {
         underTest.redo()
 
         Assert.assertEquals(listOf(5, 6, 0), underTest.toList())
-    }
-
-    private fun assertVersionsIs(expectedVersions: List<List<Int>>) {
-        repeat(expectedVersions.size) { version ->
-            underTest.version = version
-            Assert.assertEquals(expectedVersions[version], underTest.toList())
-        }
     }
 }
