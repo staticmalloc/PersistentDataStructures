@@ -13,4 +13,15 @@ interface Transactional {
      * Redo modification.
      */
     fun redo()
+
+    /**
+     * If container contains another persistent collection then do redo recursively
+     */
+    fun redoCascade()
+
+    /**
+     * If container contains another persistent collection then do undo recursively
+     */
+    fun undoCascade()
+
 }

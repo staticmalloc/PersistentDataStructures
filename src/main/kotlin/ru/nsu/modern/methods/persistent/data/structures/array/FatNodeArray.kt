@@ -62,4 +62,12 @@ class FatNodeArray<T>(
 
         override fun next() = this@FatNodeArray[index++]
     }
+
+    override fun toPersistentList() {
+        TODO("Not yet implemented")
+    }
+
+    override fun toPersistentArray() {
+        TODO("Not yet implemented")
+    }
 }

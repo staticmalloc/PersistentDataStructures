@@ -41,4 +41,27 @@ interface PersistentCollection<T> : Iterable<T>, Transactional {
             ++version
         }
     }
+
+    override fun undoCascade() {
+        undo()
+        forEach {
+            if (it is PersistentCollection<*>) {
+                it.undoCascade()
+            }
+        }
+    }
+
+    override fun redoCascade() {
+        redo()
+        forEach {
+            if (it is PersistentCollection<*>) {
+                it.redoCascade()
+            }
+        }
+    }
+
+
+    fun toPersistentList()
+
+    fun toPersistentArray()
 }
