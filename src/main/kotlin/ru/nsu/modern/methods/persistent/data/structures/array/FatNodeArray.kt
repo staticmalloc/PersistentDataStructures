@@ -69,6 +69,6 @@ class FatNodeArray<T>(
     }
 
     override fun toPersistentArray(): PersistentArray<T> {
-        TODO("Not yet implemented")
+        return this
     }
 }

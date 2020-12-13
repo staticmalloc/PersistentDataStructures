@@ -9,7 +9,11 @@ interface PersistentList<T>: PersistentCollection<T> {
     /**
      * Inserts [value] after given [index].
      */
-    fun insert(index: Int, value: T)
+    fun add(index: Int = -1, value: T)
+
+    fun addFirst(element: T)
+
+    fun addLast(element: T)
 
     /**
      * Gets value of item with [index].

@@ -45,4 +45,7 @@ internal class FatNode<T>(
         }
         return values[index]
     }
+
+
+    fun isEmpty() = values.isEmpty()
 }
