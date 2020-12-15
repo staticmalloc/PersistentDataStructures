@@ -1,5 +1,6 @@
 package ru.nsu.modern.methods.persistent.data.structures.list
 
+import ru.nsu.modern.methods.persistent.data.structures.array.FatNodeArray
 import ru.nsu.modern.methods.persistent.data.structures.array.PersistentArray
 import ru.nsu.modern.methods.persistent.data.structures.shared.FatNode
 import ru.nsu.modern.methods.persistent.data.structures.shared.VersionedReference
@@ -307,6 +308,8 @@ class FatNodeList<T>() : PersistentList<T> {
     }
 
     override fun toPersistentArray(): PersistentArray<T> {
-        TODO("Not yet implemented")
+        return FatNodeArray(size) { index: Int ->
+            this[index]
+        }
     }
 }
