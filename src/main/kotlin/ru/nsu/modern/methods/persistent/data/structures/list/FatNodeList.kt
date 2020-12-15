@@ -179,16 +179,44 @@ class FatNodeList<T>() : PersistentList<T> {
         val lastFatNode = findLastFatNode(version - 1)
         val fatn = FatNode(VersionedValue(element, version, null, lastFatNode)) //create new element
         val prevVersionedValue = lastFatNode!!.findValue(version - 1)
-        lastFatNode.addValue(VersionedValue(prevVersionedValue!!.value, version, fatn,prevVersionedValue.prev))
+        lastFatNode.addValue(VersionedValue(prevVersionedValue!!.value, version, fatn, prevVersionedValue.prev))
         allNodes.add(fatn)
     }
 
-    override fun iterator() = object : Iterator<T> {
+    override fun iterator() = object : ListIterator<T> {
+        val vr = findReference(version)
+        var curNode = if (vr == null) null else vr.reference
         var index = 0
 
-        override fun hasNext() = index < size
 
-        override fun next() = this@FatNodeList[index++]
+        override fun hasNext(): Boolean {
+            val vv = curNode!!.findValue(version)
+            return vv!!.next != null
+        }
+
+        override fun hasPrevious(): Boolean {
+            val vv = curNode!!.findValue(version)
+            return vv!!.prev != null
+        }
+
+        override fun previousIndex() = if (index <= 0) 0 else index - 1
+
+        override fun nextIndex() = if (index <= 0) 0 else index + 1
+
+        override fun previous(): T {
+            val vv = curNode!!.findValue(version)
+            curNode = vv!!.prev
+            index--
+            return vv.value
+        }
+
+        override fun next(): T {
+            val vv = curNode!!.findValue(version)
+            curNode = vv!!.next
+            index++
+            return vv.value
+        }
+
     }
 
 
@@ -220,7 +248,7 @@ class FatNodeList<T>() : PersistentList<T> {
                 val fatNodePreLast = fatNodeAt(index - 1, version - 1)
                 val versionedValue = fatNodePreLast!!.findValue(version - 1)
                 fatNodePreLast.addValue(VersionedValue(versionedValue!!.value, version, null, versionedValue.prev))
-                return fatNodeAt(index, version - 1)!!.findValue(version-1)!!.value
+                return fatNodeAt(index, version - 1)!!.findValue(version - 1)!!.value
             }
             index in 1..size - 1 -> {
                 makeNewVersion()
