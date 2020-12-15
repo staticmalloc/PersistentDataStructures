@@ -5,8 +5,8 @@ package ru.nsu.modern.methods.persistent.data.structures.shared
  * Contains list of versioned values.
  * Allows to find value by version.
  */
-internal class FatNode<T>(
-    initialValue: VersionedValue<T>
+internal class FatNode<T : Versioned<*>>(
+    initialValue: T
 ) {
     private val values = mutableListOf(initialValue)
 
@@ -15,7 +15,7 @@ internal class FatNode<T>(
     /**
      * Adds [versionedValue] to fat node.
      */
-    fun addValue(versionedValue: VersionedValue<T>) {
+    fun addValue(versionedValue: T) {
         if (versionedValue.version <= lastVersion) {
             removeVersionsFrom(versionedValue.version)
         }
@@ -33,7 +33,7 @@ internal class FatNode<T>(
      * Finds value with max version <= [version].
      * Return null if version is not found.
      */
-    fun findValue(version: Int): VersionedValue<T>? {
+    fun findValue(version: Int): T? {
         val binarySearchResult = values.binarySearch { it.version - version }
         val index = if (binarySearchResult < 0) {
             -binarySearchResult - 2
