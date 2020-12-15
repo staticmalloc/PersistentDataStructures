@@ -74,4 +74,16 @@ class PersistentArrayTest {
     fun `toPersistentArray returns same array`() {
         Assert.assertSame(underTest, underTest.toPersistentArray())
     }
+
+    @Test
+    fun `toPersistentList test`() {
+        underTest[0] = 10
+        underTest[1] = 5
+        underTest[2] = 3
+        val toList = underTest.toPersistentList()
+        Assert.assertEquals(3, toList.size)
+        Assert.assertEquals(10, toList[0])
+        Assert.assertEquals(5, toList[1])
+        Assert.assertEquals(3, toList[2])
+    }
 }

@@ -13,7 +13,6 @@ import java.lang.IndexOutOfBoundsException
 class FatNodeList<T>() : PersistentList<T> {
     private val head = FatNode(VersionedReference<T>(0)) //references for each version list head
     private val allNodes = mutableListOf<FatNode<VersionedValue<T>>>() //references for exclude memory leak
-    private var minVersion = 0
 
 
     /**
@@ -26,7 +25,6 @@ class FatNodeList<T>() : PersistentList<T> {
         init: (index: Int) -> VersionedValue<T>
     ) : this() {
         var maxVersion = 0
-        head.removeVersionsFrom(0)
         var prevVersionedValue = init(0)
         prevVersionedValue.prev = null
         maxVersion = kotlin.math.max(maxVersion, prevVersionedValue.version)
@@ -44,9 +42,8 @@ class FatNodeList<T>() : PersistentList<T> {
             prevVersionedValue = curVersionedValue
         }
         prevVersionedValue.next = null
-        minVersion = maxVersion
-        version = maxVersion
         lastVersion = maxVersion
+        version = maxVersion
     }
 
 
@@ -117,12 +114,10 @@ class FatNodeList<T>() : PersistentList<T> {
         }
 
     override var lastVersion: Int = 0
-        get() = field - minVersion
         private set
 
 
     override var version: Int = 0
-        get() = field - minVersion
         set(value) {
             require(value in 0..lastVersion) {
                 "Incorrect version number: $value, Last version is: $lastVersion"
