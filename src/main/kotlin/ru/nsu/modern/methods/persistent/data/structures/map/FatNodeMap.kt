@@ -6,7 +6,7 @@ import ru.nsu.modern.methods.persistent.data.structures.shared.FatNode
 import ru.nsu.modern.methods.persistent.data.structures.shared.VersionedValue
 
 class FatNodeMap<K, V> : PersistentMap<K, V> {
-    private val nodes = mutableMapOf<K, FatNode<PersistentMap.Entry<K, V>?>>()
+    private val nodes = mutableMapOf<K, FatNode<VersionedValue<PersistentMap.Entry<K, V>?>>>()
 
     override val size: Int
         get() = nodes.size

@@ -1,5 +1,6 @@
 package ru.nsu.modern.methods.persistent.data.structures.list
 
+import ru.nsu.modern.methods.persistent.data.structures.array.FatNodeArray
 import ru.nsu.modern.methods.persistent.data.structures.array.PersistentArray
 import ru.nsu.modern.methods.persistent.data.structures.shared.FatNode
 import ru.nsu.modern.methods.persistent.data.structures.shared.VersionedReference
@@ -10,25 +11,44 @@ import java.lang.IndexOutOfBoundsException
  * Fat node implementation of persistent List.
  */
 class FatNodeList<T>() : PersistentList<T> {
-    private val head = mutableListOf(VersionedReference<T>(0)) //references for each version list head
-    private val allNodes = mutableListOf<FatNode<T>>() //references for exclude memory leak
+    private val head = FatNode(VersionedReference<T>(0)) //references for each version list head
+    private val allNodes = mutableListOf<FatNode<VersionedValue<T>>>() //references for exclude memory leak
+    private var minVersion = 0
+
 
     /**
-     * Finds reference in head list with max version <= [version].
-     * Return null if version is not found.
+     * Constructor for toPersistentList() methods
+     * It re'uses references from other's collections
      */
-    private fun findReference(version: Int): VersionedReference<T>? {
-        val binarySearchResult = head.binarySearch { it.version - version }
-        val index = if (binarySearchResult < 0) {
-            -binarySearchResult - 2
-        } else {
-            binarySearchResult
+
+    internal constructor(
+        size: Int,
+        init: (index: Int) -> VersionedValue<T>
+    ) : this() {
+        var maxVersion = 0
+        head.removeVersionsFrom(0)
+        var prevVersionedValue = init(0)
+        prevVersionedValue.prev = null
+        maxVersion = kotlin.math.max(maxVersion, prevVersionedValue.version)
+        var prevNode = FatNode(prevVersionedValue)
+        head.addValue(VersionedReference(0, prevNode)) //add reference to first node to head
+        allNodes.add(prevNode) //add first node
+        for (i in 1..size - 1) {
+            val curVersionedValue = init(i)
+            maxVersion = kotlin.math.max(maxVersion, curVersionedValue.version)
+            val node = FatNode(curVersionedValue)
+            prevVersionedValue.next = node
+            curVersionedValue.prev = prevNode
+            allNodes.add(node)
+            prevNode = node
+            prevVersionedValue = curVersionedValue
         }
-        if (index < 0) {
-            return null
-        }
-        return head[index]
+        prevVersionedValue.next = null
+        minVersion = maxVersion
+        version = maxVersion
+        lastVersion = maxVersion
     }
+
 
     /**
      * Increment version
@@ -37,7 +57,7 @@ class FatNodeList<T>() : PersistentList<T> {
     private fun makeNewVersion() {
         val newVersion = version + 1
         if (newVersion <= lastVersion) {
-            head.removeIf { it.version >= newVersion }
+            head.removeVersionsFrom(newVersion)
             allNodes.forEach { it.removeVersionsFrom(newVersion) }
             allNodes.removeIf { it.isEmpty() }
         }
@@ -48,8 +68,8 @@ class FatNodeList<T>() : PersistentList<T> {
     /**
      * Finds last fat node depends on version
      */
-    private fun findLastFatNode(ver: Int): FatNode<T>? {
-        val versionedReference = findReference(ver)
+    private fun findLastFatNode(ver: Int): FatNode<VersionedValue<T>>? {
+        val versionedReference = head.findValue(ver)
         var lastFatNode = versionedReference!!.reference  // find last list element with prev version
         var next = lastFatNode!!.findValue(ver)!!.next
         while (next != null) {
@@ -62,8 +82,8 @@ class FatNodeList<T>() : PersistentList<T> {
     /**
      * Finds fat node at position [index] depends on version
      */
-    private fun fatNodeAt(index: Int, ver: Int): FatNode<T>? {
-        val versionedReference = findReference(ver)
+    private fun fatNodeAt(index: Int, ver: Int): FatNode<VersionedValue<T>>? {
+        val versionedReference = head.findValue(version)
         var fatNode = versionedReference!!.reference  // find last list element with prev version
         var s = 0
         var next = fatNode!!.findValue(ver)!!.next
@@ -81,7 +101,7 @@ class FatNodeList<T>() : PersistentList<T> {
     override var size: Int = 0
         private set
         get() {
-            val versionedReference = findReference(version)
+            val versionedReference = head.findValue(version)
             var lastFatNode = versionedReference!!.reference  // find last list element with prev version
             if (lastFatNode != null) {
                 var s = 1
@@ -97,9 +117,12 @@ class FatNodeList<T>() : PersistentList<T> {
         }
 
     override var lastVersion: Int = 0
+        get() = field - minVersion
         private set
 
+
     override var version: Int = 0
+        get() = field - minVersion
         set(value) {
             require(value in 0..lastVersion) {
                 "Incorrect version number: $value, Last version is: $lastVersion"
@@ -153,7 +176,7 @@ class FatNodeList<T>() : PersistentList<T> {
      */
     override fun addFirst(element: T) {
         makeNewVersion()
-        val versionedReference = findReference(version - 1)
+        val versionedReference = head.findValue(version - 1)
         val nextRef = if (versionedReference != null) versionedReference.reference else null
         val fatn = FatNode(VersionedValue(element, version, nextRef)) //create new element
         if (nextRef != null) {
@@ -162,7 +185,7 @@ class FatNodeList<T>() : PersistentList<T> {
             nextRef.addValue(VersionedValue(prevVersionedValue!!.value, version, prevVersionedValue.next, fatn))
         }
         allNodes.add(fatn) // put new element to list of all fatnodes
-        head.add(VersionedReference(version, fatn))  //add new refence to head list
+        head.addValue(VersionedReference(version, fatn))  //add new refence to head list
     }
 
 
@@ -170,7 +193,7 @@ class FatNodeList<T>() : PersistentList<T> {
      * Inserts the specified element at the end of this list
      */
     override fun addLast(element: T) {
-        val ref = findReference(version)
+        val ref = head.findValue(version)
         if (ref!!.reference == null) {
             addFirst(element)
             return
@@ -179,16 +202,44 @@ class FatNodeList<T>() : PersistentList<T> {
         val lastFatNode = findLastFatNode(version - 1)
         val fatn = FatNode(VersionedValue(element, version, null, lastFatNode)) //create new element
         val prevVersionedValue = lastFatNode!!.findValue(version - 1)
-        lastFatNode.addValue(VersionedValue(prevVersionedValue!!.value, version, fatn,prevVersionedValue.prev))
+        lastFatNode.addValue(VersionedValue(prevVersionedValue!!.value, version, fatn, prevVersionedValue.prev))
         allNodes.add(fatn)
     }
 
-    override fun iterator() = object : Iterator<T> {
+    override fun iterator() = object : ListIterator<T> {
+        val vr = head.findValue(version)
+        var curNode = if (vr == null) null else vr.reference
         var index = 0
 
-        override fun hasNext() = index < size
 
-        override fun next() = this@FatNodeList[index++]
+        override fun hasNext(): Boolean {
+            val vv = curNode!!.findValue(version)
+            return vv!!.next != null
+        }
+
+        override fun hasPrevious(): Boolean {
+            val vv = curNode!!.findValue(version)
+            return vv!!.prev != null
+        }
+
+        override fun previousIndex() = if (index <= 0) 0 else index - 1
+
+        override fun nextIndex() = if (index <= 0) 0 else index + 1
+
+        override fun previous(): T {
+            val vv = curNode!!.findValue(version)
+            curNode = vv!!.prev
+            index--
+            return vv.value
+        }
+
+        override fun next(): T {
+            val vv = curNode!!.findValue(version)
+            curNode = vv!!.next
+            index++
+            return vv.value
+        }
+
     }
 
 
@@ -212,7 +263,7 @@ class FatNodeList<T>() : PersistentList<T> {
                 makeNewVersion()
                 val fatNodeAt0 = fatNodeAt(0, version - 1)
                 val lastVersionedValue = fatNodeAt0!!.findValue(version - 1)
-                head.add(VersionedReference(version, lastVersionedValue!!.next))
+                head.addValue(VersionedReference(version, lastVersionedValue!!.next))
                 return lastVersionedValue.value
             }
             index == size - 1 -> {
@@ -220,7 +271,7 @@ class FatNodeList<T>() : PersistentList<T> {
                 val fatNodePreLast = fatNodeAt(index - 1, version - 1)
                 val versionedValue = fatNodePreLast!!.findValue(version - 1)
                 fatNodePreLast.addValue(VersionedValue(versionedValue!!.value, version, null, versionedValue.prev))
-                return fatNodeAt(index, version - 1)!!.findValue(version-1)!!.value
+                return fatNodeAt(index, version - 1)!!.findValue(version - 1)!!.value
             }
             index in 1..size - 1 -> {
                 makeNewVersion()
@@ -257,6 +308,8 @@ class FatNodeList<T>() : PersistentList<T> {
     }
 
     override fun toPersistentArray(): PersistentArray<T> {
-        TODO("Not yet implemented")
+        return FatNodeArray(size) { index: Int ->
+            this[index]
+        }
     }
 }

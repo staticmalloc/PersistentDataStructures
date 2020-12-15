@@ -6,7 +6,7 @@ package ru.nsu.modern.methods.persistent.data.structures.shared
 
 internal class VersionedValue<T>(
     val value: T,
-    val version: Int,
-    var next: FatNode<T>? = null,
-    var prev: FatNode<T>? = null
-)
+    override val version: Int,
+    var next: FatNode<VersionedValue<T>>? = null,
+    var prev: FatNode<VersionedValue<T>>? = null
+) : Versioned<T>
