@@ -169,4 +169,16 @@ class PersistentListTest {
         Assert.assertEquals(5, iterator.next())
         Assert.assertEquals(false, iterator.hasNext())
     }
+
+    @Test
+    fun `toPersistentArray test`() {
+        underTest.addLast(1)
+        underTest.addLast(2)
+        underTest.addLast(3)
+
+        val persistentArray = underTest.toPersistentArray()
+        Assert.assertEquals(underTest.toList(), persistentArray.toList())
+        Assert.assertEquals(underTest.version, persistentArray.version)
+        Assert.assertEquals(underTest.lastVersion, persistentArray.lastVersion)
+    }
 }

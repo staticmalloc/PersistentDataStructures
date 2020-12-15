@@ -1,6 +1,8 @@
 package ru.nsu.modern.methods.persistent.data.structures.map
 
+import ru.nsu.modern.methods.persistent.data.structures.array.FatNodeArray
 import ru.nsu.modern.methods.persistent.data.structures.array.PersistentArray
+import ru.nsu.modern.methods.persistent.data.structures.list.FatNodeList
 import ru.nsu.modern.methods.persistent.data.structures.list.PersistentList
 import ru.nsu.modern.methods.persistent.data.structures.shared.FatNode
 import ru.nsu.modern.methods.persistent.data.structures.shared.VersionedValue
@@ -51,39 +53,29 @@ class FatNodeMap<K, V> : PersistentMap<K, V> {
     }
 
     override fun toPersistentList(): PersistentList<PersistentMap.Entry<K, V>> {
-        TODO()
+        val iterator = presentEntriesIterator()
+        return FatNodeList(size) {
+            iterator.next()
+        }
     }
 
     override fun toPersistentArray(): PersistentArray<PersistentMap.Entry<K, V>> {
-        TODO("not implemented")
-    }
-
-    override fun iterator() = object : Iterator<PersistentMap.Entry<K, V>> {
-        private val nodesIterator = nodes.iterator()
-        private var next: PersistentMap.Entry<K, V>? = null
-
-        override fun hasNext(): Boolean {
-            if (next != null) {
-                return true
-            }
-            while (nodesIterator.hasNext()) {
-                val node = nodesIterator.next()
-                val value = node.value.findValue(version)?.value
-                if (value != null) {
-                    next = value
-                    return true
-                }
-            }
-            return false
-        }
-
-        override fun next(): PersistentMap.Entry<K, V> {
-            if (!hasNext()) {
-                throw NoSuchElementException()
-            }
-            val nextOld = next!!
-            next = null
-            return nextOld
+        val iterator = presentEntriesIterator()
+        return FatNodeArray(size, version) {
+            iterator.next()
         }
     }
+
+    override fun iterator() =
+        presentEntriesIterator().asSequence()
+            .map { it.value }
+            .iterator()
+
+    @Suppress("UNCHECKED_CAST")
+    private fun presentEntriesIterator() =
+        nodes.values.iterator().asSequence()
+            .mapNotNull { it.findValue(version) }
+            .filter { it.value != null }
+            .map { it as VersionedValue<PersistentMap.Entry<K, V>> }
+            .iterator()
 }

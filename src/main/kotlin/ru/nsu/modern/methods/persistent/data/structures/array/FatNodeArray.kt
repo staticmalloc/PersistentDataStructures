@@ -8,29 +8,39 @@ import ru.nsu.modern.methods.persistent.data.structures.shared.VersionedValue
 /**
  * Fat node implementation of persistent array.
  */
-class FatNodeArray<T>(
+class FatNodeArray<T> internal constructor(
     size: Int,
-    init: (index: Int) -> T
+    version: Int,
+    init: (index: Int) -> VersionedValue<T>
 ) : PersistentArray<T> {
+
+    constructor(
+        size: Int,
+        init: (index: Int) -> T
+    ) : this(
+        size,
+        version = 0,
+        init = { index ->
+            VersionedValue(
+                value = init(index),
+                version = 0
+            )
+        }
+    )
 
     private val nodes = Array(
         size
     ) { index ->
-        FatNode(
-            initialValue = VersionedValue(
-                value = init(index),
-                version = 0
-            )
-        )
+        FatNode(initialValue = init(index))
     }
 
     override val size: Int
         get() = nodes.size
 
-    override var lastVersion = 0
+    override var lastVersion = version
         private set
 
-    override var version = 0
+    override var version = version
         set(value) {
             require(value in 0..lastVersion) {
                 "Incorrect version number: $value, Last version is: $lastVersion"
@@ -39,7 +49,8 @@ class FatNodeArray<T>(
         }
 
     override fun get(index: Int): T {
-        return nodes[index].findValue(version)?.value ?: throw NoSuchElementException()
+        return nodes[index].findValue(version)?.value
+            ?: throw NoSuchElementException("Value for index $index with version $version is not found")
     }
 
     override fun set(index: Int, value: T) {

@@ -63,8 +63,13 @@ interface PersistentCollection<T> : Iterable<T>, Transactional {
         }
     }
 
-
+    /**
+     * Memory effectively converts collection to persistent list.
+     */
     fun toPersistentList(): PersistentList<T>
 
+    /**
+     * Memory effectively converts collection to persistent array.
+     */
     fun toPersistentArray(): PersistentArray<T>
 }

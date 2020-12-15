@@ -313,8 +313,12 @@ class FatNodeList<T>() : PersistentList<T> {
     }
 
     override fun toPersistentArray(): PersistentArray<T> {
-        return FatNodeArray(size) { index: Int ->
-            this[index]
+        val head = head.findValue(version) ?: throw IllegalStateException("Head is not defined for version: $version")
+        var currentValue = head.reference?.findValue(version)
+        return FatNodeArray(size, version) {
+            val value = currentValue!!
+            currentValue = value.next?.findValue(version)
+            value
         }
     }
 }

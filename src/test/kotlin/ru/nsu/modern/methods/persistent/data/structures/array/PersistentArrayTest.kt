@@ -69,4 +69,9 @@ class PersistentArrayTest {
 
         Assert.assertEquals(listOf(5, 6, 0), underTest.toList())
     }
+
+    @Test
+    fun `toPersistentArray returns same array`() {
+        Assert.assertSame(underTest, underTest.toPersistentArray())
+    }
 }
