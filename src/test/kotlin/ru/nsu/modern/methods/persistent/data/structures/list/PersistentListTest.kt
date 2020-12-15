@@ -22,6 +22,15 @@ class PersistentListTest {
         underTest.version = 2
 
         Assert.assertEquals(2, underTest.version)
+
+        underTest.assertVersionsIs(
+            expectedVersions = listOf(
+                listOf(),
+                listOf(0),
+                listOf(1, 0),
+                listOf(2, 1, 0)
+            )
+        )
     }
 
     @Test
@@ -36,6 +45,15 @@ class PersistentListTest {
 
         underTest.version = 2
         Assert.assertEquals(2, underTest.size)
+
+        underTest.assertVersionsIs(
+            expectedVersions = listOf(
+                listOf(),
+                listOf(0),
+                listOf(0, 1),
+                listOf(2, 0, 1)
+            )
+        )
     }
 
     @Test
@@ -61,6 +79,15 @@ class PersistentListTest {
         underTest[1] = 100
         Assert.assertEquals(100, underTest[1])
         Assert.assertEquals(4, underTest.version)
+        underTest.assertVersionsIs(
+            expectedVersions = listOf(
+                listOf(),
+                listOf(0),
+                listOf(0, 1),
+                listOf(2, 0, 1),
+                listOf(2, 100, 1)
+            )
+        )
     }
 
 
@@ -79,6 +106,17 @@ class PersistentListTest {
 
         underTest.add(1, 50)
         Assert.assertEquals(50, underTest[1])
+
+        underTest.assertVersionsIs(
+            expectedVersions = listOf(
+                listOf(),
+                listOf(0),
+                listOf(0, 1),
+                listOf(2, 0, 1),
+                listOf(2, 0, 1, 100),
+                listOf(2, 50, 0, 1, 100)
+            )
+        )
     }
 
 
@@ -102,5 +140,33 @@ class PersistentListTest {
         Assert.assertEquals(1, underTest.remove(0))
 
         Assert.assertEquals(3, underTest.size)
+
+        underTest.assertVersionsIs(
+            expectedVersions = listOf(
+                listOf(),
+                listOf(1),
+                listOf(1, 2),
+                listOf(1, 2, 3),
+                listOf(1, 2, 3, 4),
+                listOf(1, 2, 3, 4, 5),
+                listOf(1, 2, 3, 4, 5, 6),
+                listOf(1, 2, 3, 4, 5),
+                listOf(1, 2, 4, 5),
+                listOf(2, 4, 5)
+            )
+        )
+    }
+
+    @Test
+    fun `iterator test`() {
+        Assert.assertEquals(false, underTest.iterator().hasNext())
+        underTest.addFirst(5)
+        underTest.addFirst(10)
+        val iterator = underTest.iterator()
+        Assert.assertEquals(true, iterator.hasNext())
+        Assert.assertEquals(10, iterator.next())
+        Assert.assertEquals(true, iterator.hasNext())
+        Assert.assertEquals(5, iterator.next())
+        Assert.assertEquals(false, iterator.hasNext())
     }
 }

@@ -213,11 +213,16 @@ class FatNodeList<T>() : PersistentList<T> {
 
 
         override fun hasNext(): Boolean {
-            val vv = curNode!!.findValue(version)
-            return vv!!.next != null
+            if(curNode == null)
+                return false
+            if(index == 0)
+                return true
+            return curNode != null
         }
 
         override fun hasPrevious(): Boolean {
+            if(curNode == null)
+                return false
             val vv = curNode!!.findValue(version)
             return vv!!.prev != null
         }
